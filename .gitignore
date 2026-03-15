@@ -1,0 +1,29 @@
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Local datasets (heavy, downloaded manually)
+data/
+
+# Local notebook result duplicates
+notebooks/results/
+
+# Local generated demo images
+segmentation_result.png
+synthetic_marginals.png
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

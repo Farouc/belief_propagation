@@ -1,0 +1,2 @@
+index,iou,accuracy,runtime_sec,iterations,converged
+0,0.0,0.4740625,18.753888538005413,30.0,0.0

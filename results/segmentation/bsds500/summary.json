@@ -1,0 +1,20 @@
+{
+  "num_images": 10,
+  "mean_iou": 0.15339506803618547,
+  "mean_accuracy": 0.438296875,
+  "mean_runtime_sec": 15.56026531499956,
+  "mean_iterations": 28.1,
+  "convergence_rate": 0.2,
+  "config": {
+    "data_path": "/mnt/D/mva_P2/GRM/belief_propagation/data/BSDS500",
+    "max_images": 10,
+    "resize": [
+      80,
+      80
+    ],
+    "max_iters": 30,
+    "tol": 0.0001,
+    "smoothness": 2.0,
+    "seed": 0
+  }
+}

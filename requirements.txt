@@ -1,0 +1,16 @@
+numpy
+scipy
+scikit-image
+opencv-python
+matplotlib
+networkx
+
+# notebooks
+jupyterlab
+ipykernel
+
+# Sudoku HF loader
+datasets
+
+# optional (not required by current experiments)
+torch
