@@ -1,14 +1,18 @@
 {
-  "num_puzzles": 5,
-  "solve_rate": 0.6,
+  "num_puzzles": 100,
+  "solve_rate": 0.97,
+  "solve_rate_std": 0.17058722109231983,
   "clue_consistency_rate": 1.0,
-  "convergence_rate": 0.6,
-  "mean_iterations": 38.6,
-  "mean_runtime_sec": 2.629094883799553,
+  "convergence_rate": 0.98,
+  "mean_iterations": 30.13,
+  "std_iterations": 18.678144982840237,
+  "mean_runtime_sec": 2.3566208988497963,
+  "std_runtime_sec": 1.453331713400377,
   "config": {
-    "n_samples": 5,
-    "max_iters": 80,
-    "tol": 1e-06,
+    "n_samples": 100,
+    "max_iters": 150,
+    "tol": 0.001,
+    "damping": 0.5,
     "seed": 0
   }
 }

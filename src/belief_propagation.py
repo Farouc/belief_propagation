@@ -18,19 +18,29 @@ class BeliefPropagation:
     states of node ``j``.
     """
 
-    def __init__(self, graph: PairwiseMRF, max_iters: int = 50, tol: float = 1e-6) -> None:
+    def __init__(
+        self,
+        graph: PairwiseMRF,
+        max_iters: int = 50,
+        tol: float = 1e-3,
+        damping: float = 0.5,
+    ) -> None:
         if max_iters <= 0:
             raise ValueError("max_iters must be positive")
         if tol <= 0:
             raise ValueError("tol must be positive")
+        if not (0.0 < damping <= 1.0):
+            raise ValueError("damping must be in (0, 1]")
 
         self.graph = graph
         self.max_iters = int(max_iters)
         self.tol = float(tol)
+        self.damping = float(damping)
 
         self.messages: Dict[Tuple[int, int], np.ndarray] = {}
         self.num_iters: int = 0
         self.converged: bool = False
+        self.message_deltas: List[float] = []
 
     @staticmethod
     def _normalize(vec: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -79,9 +89,9 @@ class BeliefPropagation:
         # Sum over x_i via matrix multiplication:
         # local shape: (K_i,), psi_ij shape: (K_i, K_j), result: (K_j,)
         pairwise = self.graph.get_pairwise_potential(i, j)
-        new_message = local @ pairwise
+        raw_message = local @ pairwise
 
-        return self._normalize(new_message)
+        return self._normalize(raw_message)
 
     def run(self) -> bool:
         """Run synchronous loopy BP updates until convergence or max iterations.
@@ -96,6 +106,7 @@ class BeliefPropagation:
 
         directed_edges = self._directed_edges()
         self.converged = False
+        self.message_deltas = []
 
         for iteration in range(1, self.max_iters + 1):
             old_messages = self.messages
@@ -103,15 +114,22 @@ class BeliefPropagation:
 
             max_delta = 0.0
             for i, j in directed_edges:
-                msg = self.update_message(i, j, message_source=old_messages)
-                new_messages[(i, j)] = msg
+                updated = self.update_message(i, j, message_source=old_messages)
+                old = old_messages[(i, j)]
 
-                delta = float(np.max(np.abs(msg - old_messages[(i, j)])))
+                # Damping stabilizes loopy BP by blending old and new messages.
+                damped = (1.0 - self.damping) * old + self.damping * updated
+                damped = self._normalize(damped)
+
+                new_messages[(i, j)] = damped
+
+                delta = float(np.max(np.abs(damped - old)))
                 if delta > max_delta:
                     max_delta = delta
 
             self.messages = new_messages
             self.num_iters = iteration
+            self.message_deltas.append(max_delta)
 
             if max_delta < self.tol:
                 self.converged = True

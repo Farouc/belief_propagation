@@ -1,20 +1,24 @@
 {
-  "num_images": 1,
-  "mean_iou": 0.0,
-  "mean_accuracy": 0.4740625,
-  "mean_runtime_sec": 18.753888538005413,
-  "mean_iterations": 30.0,
-  "convergence_rate": 0.0,
+  "num_images": 20,
+  "mean_iou": 0.7739525820216098,
+  "std_iou": 0.20069683291140542,
+  "mean_accuracy": 0.9738888888888889,
+  "std_accuracy": 0.017235881679912714,
+  "mean_runtime_sec": 9.242617105298995,
+  "mean_iterations": 18.6,
+  "convergence_rate": 0.2,
   "config": {
     "data_path": "/mnt/D/mva_P2/GRM/belief_propagation/data/grabcut",
-    "max_images": 10,
+    "max_images": 20,
     "resize": [
-      80,
-      80
+      60,
+      60
     ],
-    "max_iters": 30,
-    "tol": 0.0001,
-    "smoothness": 2.0,
+    "max_iters": 20,
+    "tol": 0.001,
+    "damping": 0.5,
+    "lambda": 2.0,
+    "use_gt_unary": true,
     "seed": 0
   }
 }

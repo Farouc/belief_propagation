@@ -7,20 +7,18 @@ from typing import List, Tuple
 
 import numpy as np
 from scipy.io import loadmat
-from skimage import color, io, transform
+from skimage import color, io, measure, transform
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 MASK_EXTENSIONS = (".mat", ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
 SPLITS = ("train", "val", "test")
 
 
-def _to_float_gray(image: np.ndarray) -> np.ndarray:
-    """Convert image to grayscale float64 in [0, 1]."""
+def _to_float_image(image: np.ndarray) -> np.ndarray:
+    """Convert image to float64 in [0, 1] while preserving channels."""
     img = np.asarray(image)
-    if img.ndim == 3:
-        if img.shape[-1] == 4:
-            img = img[..., :3]
-        img = color.rgb2gray(img)
+    if img.ndim == 3 and img.shape[-1] == 4:
+        img = img[..., :3]
     img = img.astype(np.float64)
     if img.max() > 1.0:
         img /= 255.0
@@ -43,15 +41,14 @@ def _collect_numeric_arrays(obj: object, out: List[np.ndarray]) -> None:
 
 
 def _load_bsds_mat_mask(path: Path) -> np.ndarray:
-    """Load the first segmentation map from a BSDS500 .mat annotation file."""
+    """Load one segmentation map from a BSDS500 ``.mat`` annotation file."""
     data = loadmat(path)
     if "groundTruth" not in data:
         raise ValueError(f"Expected key 'groundTruth' in {path}")
 
     gt = data["groundTruth"]
 
-    # Standard BSDS format: groundTruth is object array where each item is a
-    # struct-like ndarray with fields {'Segmentation', 'Boundaries'}.
+    # Standard BSDS format: each element contains fields {'Segmentation', ...}.
     for item in gt.flat:
         if isinstance(item, np.ndarray) and item.dtype.names and "Segmentation" in item.dtype.names:
             seg = item["Segmentation"][0, 0]
@@ -59,7 +56,7 @@ def _load_bsds_mat_mask(path: Path) -> np.ndarray:
             if seg.ndim == 2:
                 return seg
 
-    # Fallback: recursively scan numeric arrays and pick the richest 2D map.
+    # Fallback: recursively scan numeric arrays and pick the most informative 2D map.
     arrays: List[np.ndarray] = []
     _collect_numeric_arrays(gt, arrays)
     arrays_2d = [arr.squeeze() for arr in arrays if arr.squeeze().ndim == 2]
@@ -73,20 +70,56 @@ def _load_bsds_mat_mask(path: Path) -> np.ndarray:
     return max(arrays_2d, key=score)
 
 
-def _to_binary_mask(segmentation: np.ndarray) -> np.ndarray:
-    """Convert a segmentation map to a binary mask (foreground=1, background=0)."""
+def _largest_connected_component_mask(segmentation: np.ndarray) -> np.ndarray:
+    """Return the largest connected component mask from a segmentation map."""
     seg = np.asarray(segmentation)
     if seg.ndim == 3:
-        seg = seg[..., 0]
+        if seg.shape[-1] == 4:
+            seg = seg[..., :3]
+        seg = color.rgb2gray(seg)
+    seg = np.asarray(seg).squeeze()
+    if seg.ndim != 2:
+        raise ValueError(f"Expected 2D segmentation map, got shape {seg.shape}")
 
-    values = np.unique(seg)
-    if values.size <= 2:
-        return (seg > values.min()).astype(np.uint8)
+    labels = np.unique(seg)
+    labels = labels[np.isfinite(labels)]
+    if labels.size == 0:
+        raise ValueError("Segmentation map contains no finite labels")
 
-    # Treat the dominant label as background, all others as foreground.
-    labels, counts = np.unique(seg, return_counts=True)
-    background_label = labels[np.argmax(counts)]
-    return (seg != background_label).astype(np.uint8)
+    best_mask = np.zeros_like(seg, dtype=bool)
+    best_size = -1
+
+    for label in labels:
+        component_map = measure.label(seg == label, connectivity=1)
+        if component_map.max() == 0:
+            continue
+
+        counts = np.bincount(component_map.ravel())
+        if counts.size <= 1:
+            continue
+
+        component_id = int(np.argmax(counts[1:]) + 1)
+        component_size = int(counts[component_id])
+        if component_size > best_size:
+            best_size = component_size
+            best_mask = component_map == component_id
+
+    if best_size <= 0:
+        raise ValueError("Could not extract largest connected component")
+
+    return best_mask
+
+
+def _to_binary_mask(segmentation: np.ndarray) -> np.ndarray:
+    """Convert multi-region segmentation to binary mask.
+
+    Convention:
+      - largest connected component is treated as background (0)
+      - all remaining pixels are foreground (1)
+    """
+    background = _largest_connected_component_mask(segmentation)
+    foreground = np.logical_not(background)
+    return foreground.astype(np.uint8)
 
 
 def _resolve_image_and_gt_roots(dataset_root: Path) -> Tuple[Path, Path]:
@@ -176,7 +209,9 @@ def _find_mask_file(image_path: Path, image_root: Path, gt_root: Path) -> Path |
 
 
 def load_bsds500_dataset(
-    path: str | Path, max_images: int = 20, resize: Tuple[int, int] | None = (80, 80)
+    path: str | Path,
+    max_images: int = 20,
+    resize: Tuple[int, int] | None = (60, 60),
 ) -> Tuple[List[np.ndarray], List[np.ndarray]]:
     """Load a BSDS500 subset and convert annotations to binary masks.
 
@@ -192,8 +227,8 @@ def load_bsds500_dataset(
     Returns
     -------
     images:
-        List of grayscale float images in [0, 1].
-    ground_truth_masks:
+        List of float images in [0, 1] (RGB when available).
+    binary_masks:
         List of binary masks with values in {0, 1}.
     """
     if max_images <= 0:
@@ -214,31 +249,49 @@ def load_bsds500_dataset(
         if mask_path is None:
             continue
 
-        image = _to_float_gray(io.imread(image_path))
+        image = _to_float_image(io.imread(image_path))
         if mask_path.suffix.lower() == ".mat":
             mask_raw = _load_bsds_mat_mask(mask_path)
         else:
             mask_raw = io.imread(mask_path)
-        mask = _to_binary_mask(mask_raw)
+
+        try:
+            mask = _to_binary_mask(mask_raw)
+        except Exception:
+            # Graceful fallback for non-standard annotation files.
+            raw = np.asarray(mask_raw)
+            if raw.ndim == 3:
+                raw = raw[..., 0]
+            mask = (raw > np.median(raw)).astype(np.uint8)
 
         if resize is not None:
-            image = transform.resize(
-                image,
-                resize,
-                order=1,
-                anti_aliasing=True,
-                preserve_range=True,
-            )
+            if image.ndim == 2:
+                image = transform.resize(
+                    image,
+                    resize,
+                    order=1,
+                    anti_aliasing=True,
+                    preserve_range=True,
+                )
+            else:
+                image = transform.resize(
+                    image,
+                    (*resize, image.shape[-1]),
+                    order=1,
+                    anti_aliasing=True,
+                    preserve_range=True,
+                )
+
             mask = transform.resize(
                 mask.astype(np.float64),
                 resize,
                 order=0,
                 anti_aliasing=False,
                 preserve_range=True,
-            ).astype(np.uint8)
+            )
 
         images.append(image.astype(np.float64))
-        masks.append(mask.astype(np.uint8))
+        masks.append((mask > 0.5).astype(np.uint8))
 
     if not images:
         raise RuntimeError(

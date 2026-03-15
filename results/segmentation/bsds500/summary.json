@@ -1,20 +1,24 @@
 {
-  "num_images": 10,
-  "mean_iou": 0.15339506803618547,
-  "mean_accuracy": 0.438296875,
-  "mean_runtime_sec": 15.56026531499956,
-  "mean_iterations": 28.1,
-  "convergence_rate": 0.2,
+  "num_images": 20,
+  "mean_iou": 0.7867689291692006,
+  "std_iou": 0.12726272348087905,
+  "mean_accuracy": 0.8635138888888889,
+  "std_accuracy": 0.10239562116137921,
+  "mean_runtime_sec": 16.465583976400374,
+  "mean_iterations": 37.45,
+  "convergence_rate": 0.45,
   "config": {
     "data_path": "/mnt/D/mva_P2/GRM/belief_propagation/data/BSDS500",
-    "max_images": 10,
+    "max_images": 20,
     "resize": [
-      80,
-      80
+      60,
+      60
     ],
-    "max_iters": 30,
-    "tol": 0.0001,
-    "smoothness": 2.0,
+    "max_iters": 50,
+    "tol": 0.001,
+    "damping": 0.5,
+    "lambda": 2.0,
+    "use_gt_unary": true,
     "seed": 0
   }
 }
