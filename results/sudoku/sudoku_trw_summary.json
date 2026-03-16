@@ -1,0 +1,19 @@
+{
+  "num_puzzles": 100,
+  "solve_rate": 0.71,
+  "solve_rate_std": 0.45376205218153715,
+  "clue_consistency_rate": 1.0,
+  "convergence_rate": 0.99,
+  "mean_iterations": 65.58,
+  "std_iterations": 26.523642283819168,
+  "mean_runtime_sec": 23.898903647840342,
+  "std_runtime_sec": 9.917979712381271,
+  "config": {
+    "n_samples": 100,
+    "max_iters": 150,
+    "tol": 0.001,
+    "damping": 0.5,
+    "seed": 0,
+    "rho": "uniform_0.5"
+  }
+}

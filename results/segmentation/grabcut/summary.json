@@ -4,7 +4,7 @@
   "std_iou": 0.20069683291140542,
   "mean_accuracy": 0.9738888888888889,
   "std_accuracy": 0.017235881679912714,
-  "mean_runtime_sec": 9.242617105298995,
+  "mean_runtime_sec": 8.958072378851648,
   "mean_iterations": 18.6,
   "convergence_rate": 0.2,
   "config": {
