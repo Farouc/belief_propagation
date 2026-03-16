@@ -1,12 +1,12 @@
 {
   "num_images": 20,
-  "mean_iou": 0.7867689291692006,
-  "std_iou": 0.12726272348087905,
-  "mean_accuracy": 0.8635138888888889,
-  "std_accuracy": 0.10239562116137921,
-  "mean_runtime_sec": 8.135403095014045,
-  "mean_iterations": 37.45,
-  "convergence_rate": 0.45,
+  "mean_iou": 0.7775081618229256,
+  "std_iou": 0.12161494351363307,
+  "mean_accuracy": 0.8584027777777777,
+  "std_accuracy": 0.09810066931190858,
+  "mean_runtime_sec": 5.9567547599988755,
+  "mean_iterations": 13.85,
+  "convergence_rate": 1.0,
   "config": {
     "data_path": "C:\\Users\\halac\\Desktop\\MVA\\belief_propagation\\data\\BSDS500",
     "max_images": 20,
@@ -19,6 +19,7 @@
     "damping": 0.5,
     "lambda": 2.0,
     "use_gt_unary": true,
-    "seed": 0
+    "seed": 0,
+    "rho": "uniform_0.5"
   }
 }
