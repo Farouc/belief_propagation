@@ -1,0 +1,31 @@
+{
+  "num_puzzles": 100,
+  "num_unique_clue_counts": 33,
+  "clue_count_min": 28,
+  "clue_count_max": 76,
+  "clue_count_mean": 42.55,
+  "classic_bucket_counts": {
+    "hard": 2,
+    "medium": 28,
+    "easy": 70
+  },
+  "quantile_bucket_counts": {
+    "hard_q": 38,
+    "medium_q": 30,
+    "easy_q": 32
+  },
+  "quantile_thresholds": {
+    "q1": 36.0,
+    "q2": 43.0
+  },
+  "diversity_sufficient_for_classic_bins": false,
+  "clue_source": "examples",
+  "config": {
+    "bp_metrics": "results/sudoku/metrics.csv",
+    "trw_metrics": "results/sudoku/sudoku_trw_metrics.csv",
+    "n_samples": 100,
+    "min_unique_clues": 6,
+    "min_bucket_size": 8,
+    "examples_root": "results/sudoku/examples"
+  }
+}

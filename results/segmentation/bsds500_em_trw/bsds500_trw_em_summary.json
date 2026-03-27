@@ -1,0 +1,34 @@
+{
+  "dataset": "bsds500",
+  "inference": "trw",
+  "num_images": 20,
+  "mean_iou_raw": 0.38757222100219185,
+  "std_iou_raw": 0.2510480016055562,
+  "mean_accuracy_raw": 0.5235277777777777,
+  "std_accuracy_raw": 0.2747633114424392,
+  "mean_iou_eval": 0.5961359715837663,
+  "std_iou_eval": 0.16566572232721308,
+  "mean_accuracy_eval": 0.7123888888888887,
+  "std_accuracy_eval": 0.17589597357108128,
+  "flip_rate_for_eval": 0.5,
+  "mean_runtime_sec": 10.393422426100006,
+  "mean_iterations": 12.95,
+  "convergence_rate": 1.0,
+  "mean_em_iterations": 18.9,
+  "config": {
+    "data_path": "data/BSDS500",
+    "max_images": 20,
+    "resize": [
+      60,
+      60
+    ],
+    "max_iters": 50,
+    "tol": 0.001,
+    "damping": 0.5,
+    "lambda": 2.0,
+    "em_max_iters": 60,
+    "em_tol": 0.0001,
+    "em_regularization": 0.0001,
+    "seed": 0
+  }
+}
